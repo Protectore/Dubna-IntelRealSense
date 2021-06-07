@@ -3,6 +3,18 @@ import pyrealsense2 as rs2
 
 
 def calibrate(image_width=256, image_height=144, frame_rate=90, calibration_settings='', timeout=15000):
+    """
+    Функция калибровки камеры.
+    Для калибровки камеры необходимо создать условия, описанные в статье 
+    Intel® RealSense™ Self-Calibration for D400 Series Depth Cameras
+    https://dev.intelrealsense.com/docs/self-calibration-for-depth-cameras
+    
+    Returns:
+    result - калибровочная таблица
+    health - оценка работоспособности камеры, если health < 0.25 - камера откалибрована хорошо, \
+    0.25 < health < 0.75 - результат может быть улучшен, health > 0.75 - требуется повторная калибровка
+    """
+    
     # Once started successfully, dev object can be casted to rs2.auto_calibrated_device by calling:
     pipeline = rs2.pipeline()
     config = rs2.config()
