@@ -5,6 +5,17 @@ import numpy as np
 import cv2
 import time
 
+def get_video_stream_from_camera():
+    pipe = rs.pipeline()
+    config = rs.config()
+    profile = pipe.start(config)
+    for _ in range(5):
+        pipe.wait_for_frames()
+    
+    while True:
+        frame = pipe.wait_for_frames()
+        yield np.asanyarray(frame.get_color_frame().get_data())
+
 
 def show_video_from_camera() -> None:
     """
