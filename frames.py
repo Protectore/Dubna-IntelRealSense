@@ -8,7 +8,7 @@ def colorize_depth(depth: rs2.depth_frame) -> rs2.video_frame:
      # use colorizer to visualize depth data
     color_map = rs2.colorizer()
     # use black to white color map
-    color_map.set_option(rs2.option.color_scheme, 3) # 0 - JET, 3 - black&white
+    color_map.set_option(rs2.option.color_scheme, 0) # 0 - JET, 3 - black&white
 
     colorized = color_map.colorize(depth)
     return colorized

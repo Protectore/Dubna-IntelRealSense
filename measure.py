@@ -17,13 +17,13 @@ FPS = 30
 
 class LineDrawer:
 
-    def __init__(self):
+    def __init__(self, thickness = 1, color = (255, 0, 0)):
         self.image = None
         self.cache = None
         self.start_pt = (0, 0)
         self.end_pt = (0, 0)
-        self.color = (255, 0, 0)
-        self.thickness = 3
+        self.color = color
+        self.thickness = thickness
         self.drawing = False
     
     
@@ -89,15 +89,6 @@ class Projector:
         return True
 
 
-    def recalculate(self):
-        depth_stream = profile.get_stream(rs2.stream.depth)
-        color_stream = profile.get_stream(rs2.stream.color)
-        self.depth_intrinsics = depth_stream.as_video_stream_profile().get_intrinsics()  # Эта штука нужна для первоначального кода
-        self.color_intrinsics = color_stream.as_video_stream_profile().get_intrinsics()
-        self.depth_to_color_extrinsics = depth_stream.as_video_stream_profile().get_extrinsics_to(color_stream)
-        self.color_to_depth_extrinsics = color_stream.as_video_stream_profile().get_extrinsics_to(depth_stream)
-
-
     def color2depth(self, color_pixel):
         if not self.check_frames:
             return None
@@ -129,7 +120,7 @@ class LineMeasurer:
 
 
     def calculate(self):
-        diff = self.stop - self.start
+        diff = np.abs(self.stop - self.start)
         return np.linalg.norm(diff)
 
 
@@ -246,11 +237,7 @@ if __name__ == '__main__':
             frames, depth_frame, color_frame = get_frame(pipe)
             depth_frame = depth_processer.process(frames)
             depth_img, col_img = to_image_representation(depth_frame=depth_frame, color_frame=color_frame)
-            #set_frame_params(color_frame, depth_frame, depth_img, col_img, color_drawer, depth_drawer, projector)
-            color_drawer.fed_image(col_img)
-            depth_drawer.fed_image(depth_img)
-            projector.color_frame = color_frame
-            projector.depth_frame = depth_frame
+            set_frame_params(color_frame, depth_frame, depth_img, col_img, color_drawer, depth_drawer, projector)
 
             params[0] = projector
             params[1] = color_drawer
