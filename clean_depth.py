@@ -1,12 +1,21 @@
 import cv2 
 import pyrealsense2 as rs2
 import numpy as np
-
 from frames import *
+
 
 def set_device_options(profile):
     # set high density preset to reduce missing depth pixels
-    depth_sensor = profile.get_device().first_depth_sensor()
+    #depth_sensor = profile.get_device().first_depth_sensor()
+
+    query = profile.get_device().query_sensors()
+    depth_sensor = query[0]
+    color_sensor = query[1]
+    depth_sensor.set_option(rs2.option.enable_auto_exposure, False)
+    depth_sensor.set_option(rs2.option.exposure, 350)
+    depth_sensor.set_option(rs2.option.laser_power, 300)
+    color_sensor.set_option(rs2.option.enable_auto_exposure, True)
+    #color_sensor.set_option(rs2.option.exposure, 16)
 
     # get high_accuracy_visual_preset
     #preset_range = depth_sensor.get_option_range(rs2.option.visual_preset)
@@ -32,8 +41,8 @@ class DepthProcesser:
         #enable hole-filling
         self.spat.set_option(rs2.option.holes_fill, 5) # 5 = fill all the zero pixels
         self.spat.set_option(rs2.option.filter_magnitude, 5)
-        self.spat.set_option(rs2.option.filter_smooth_alpha, 1)
-        self.spat.set_option(rs2.option.filter_smooth_delta, 50)
+        self.spat.set_option(rs2.option.filter_smooth_alpha, 0.6)
+        self.spat.set_option(rs2.option.filter_smooth_delta, 8)
         # define temporal filter
         self.temp = rs2.temporal_filter()
         # spatially align all streams to depth viewport
@@ -109,7 +118,7 @@ if __name__ == '__main__':
 
     # start pipeline 
     profile = pipe.start(cfg)
-    set_device_options(profile)
+    #set_device_options(profile)
 
     depth_processer = DepthProcesser()
 
@@ -117,7 +126,7 @@ if __name__ == '__main__':
 
         frames, depth_frame, color_frame = get_frame(pipe)
         #depth_frame = depth_processing(frames)
-        depth_frame = depth_processer.process(frames, align=False)
+        #depth_frame = depth_processer.process(frames, align=True)
         depth_img, col_img = to_image_representation(depth_frame=depth_frame, color_frame=color_frame)
         cv2.imshow(COLOR_WINDOW, col_img)
         cv2.imshow(DEPTH_WINDOW, depth_img)

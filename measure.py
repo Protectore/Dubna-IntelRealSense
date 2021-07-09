@@ -78,6 +78,19 @@ class Projector:
         self.color_frame = None
         self.depth_frame = None
 
+    def set_values(self, depth_frame, color_frame):
+        depth_stream = depth_frame.get_profile().as_video_stream_profile()
+        color_stream = color_frame.get_profile().as_video_stream_profile()
+
+        self.depth_intrinsics = depth_stream.as_video_stream_profile().get_intrinsics()  # Эта штука нужна для первоначального кода
+        self.color_intrinsics = color_stream.as_video_stream_profile().get_intrinsics()
+        self.depth_to_color_extrinsics = depth_stream.as_video_stream_profile().get_extrinsics_to(color_stream)
+        self.color_to_depth_extrinsics = color_stream.as_video_stream_profile().get_extrinsics_to(depth_stream)
+
+        self.depth_frame = depth_frame
+        self.color_frame = color_frame
+
+
 
     def check_frames(self):
         if self.color_frame is None:
@@ -90,7 +103,7 @@ class Projector:
 
 
     def color2depth(self, color_pixel):
-        if not self.check_frames:
+        if not self.check_frames():
             return None
         depth_data = self.depth_frame.get_data()
         depth_pixel = rs2.rs2_project_color_pixel_to_depth_pixel(
@@ -102,9 +115,9 @@ class Projector:
 
     
     def pixel2point(self, pixel):
-        if not self.check_frames:
+        if not self.check_frames():
             return None
-        print(np.asanyarray(self.depth_frame.get_data()).shape)
+        #print(np.asanyarray(self.depth_frame.get_data()).shape)
         depth = np.asanyarray(self.depth_frame.get_data())[pixel[1], pixel[0]]
         return np.array(rs2.rs2_deproject_pixel_to_point(self.depth_intrinsics, pixel[::-1], depth))
 
@@ -120,7 +133,7 @@ class LineMeasurer:
 
 
     def calculate(self):
-        diff = np.abs(self.stop - self.start)
+        diff = self.stop - self.start
         return np.linalg.norm(diff)
 
 
